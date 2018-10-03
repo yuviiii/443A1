@@ -25,7 +25,7 @@ int get_histogram(
 	long min;
     fseek(file_ptr, 0, SEEK_END);
     long bytes = ftell(file_ptr);
-    rewind(file_ptr);
+    fseek(file_ptr, 0, SEEK_SET);
 
 	struct timeb t;
 	long start_t;
@@ -34,16 +34,17 @@ int get_histogram(
 
 	ftime(&t);
 	start_t = t.time * 1000 + t.millitm;
+	*total_bytes_read = 0;
+
 	while (bytes > 0){
 		min = (long)fmin((double)block_size, (double)bytes);
 		bzero(buf,block_size);
 		fread(buf, 1, min, file_ptr);
 		for (int i = 0; i < min; i++){
-			char c = buf[i];
-			hist[c-'A']+=1;
+			hist[buf[i] - 'A'] ++;
 		}
 		*total_bytes_read += min;
-		bytes -= block_size;
+		bytes -= min;
 	}
 	ftime(&t);
 	end_t = t.time*1000 + t.millitm;
@@ -69,14 +70,10 @@ int main(int argc, char *argv[]){
 	assert(!(ret < 0));
 
 	printf("Computed the histogram in %ld ms.\n", milliseconds);
-	long total_byte=0;
 	for (int i = 0; i < 26; i++){
-		total_byte+=hist[i];
 		printf("%c : %ld\n", 'A' + i, hist[i]);
 	}
-	printf("%ld\n", milliseconds);
 	printf("Data rate: %f Bps\n", (double)filelen/milliseconds*1000);
-	printf("total_byte:%ld\n", filelen);
 	fclose(file_ptr);
 	return 0;
 }
