@@ -25,7 +25,7 @@ int main(int argc, char **argv){
 	long left_bytes = total_bytes;
 	long start_t;
 	long end_t;
-	long writting_time;
+	long writting_time = 0;
 	long min;
 
 	while (left_bytes > 0){
